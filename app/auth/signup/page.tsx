@@ -3,12 +3,13 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowLeft, Github, Mail } from "lucide-react"
-import { signupUser } from "@/app/actions/auth-actions"
+import { registerUser } from "@/app/actions/auth-actions"
 import { motion } from "framer-motion" // Import Framer Motion
 
 const fadeIn = {
@@ -16,27 +17,80 @@ const fadeIn = {
   animate: { opacity: 1, transition: { duration: 0.5 } },
 }
 
-export default function SignupPage() {
+export default function SignUpPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [isGithubLoading, setIsGithubLoading] = useState(false)
 
   async function handleSubmit(formData: FormData) {
     setIsLoading(true)
     setError("")
 
     try {
-      const result = await signupUser(formData)
+      const result = await registerUser(formData)
 
       if (result.success) {
         router.push("/dashboard")
       } else {
-        setError(result.message || "Sign up failed. Please try again.")
+        setError(result.message || "Registration failed. Please try again.")
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.")
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true)
+    setError("")
+    try {
+      console.log("Starting Google sign-in process...")
+      const result = await signIn("google", {
+        callbackUrl: "/dashboard",
+        redirect: true,
+        state: "signup"
+      })
+      console.log("Google sign-in result:", result)
+      
+      if (result?.error) {
+        console.error("Google sign-in error:", result.error)
+        setError(`Failed to sign in with Google: ${result.error}`)
+      }
+    } catch (err) {
+      console.error("Unexpected error during Google sign-in:", err)
+      setError("An unexpected error occurred. Please try again.")
+    } finally {
+      setIsGoogleLoading(false)
+    }
+  }
+
+  const handleGithubSignIn = async () => {
+    setIsGithubLoading(true)
+    setError("")
+    try {
+      console.log("Starting GitHub sign-in process...")
+      const result = await signIn("github", {
+        callbackUrl: "/dashboard",
+        redirect: false,
+        state: "signup"
+      })
+      console.log("GitHub sign-in result:", result)
+      
+      if (result?.error) {
+        console.error("GitHub sign-in error:", result.error)
+        setError(`Failed to sign in with GitHub: ${result.error}`)
+      } else if (result?.ok) {
+        console.log("GitHub sign-in successful")
+        router.push("/dashboard")
+      }
+    } catch (err) {
+      console.error("Unexpected error during GitHub sign-in:", err)
+      setError("An unexpected error occurred. Please try again.")
+    } finally {
+      setIsGithubLoading(false)
     }
   }
 
@@ -67,10 +121,10 @@ export default function SignupPage() {
         <div className="relative z-20 mt-auto">
           <blockquote className="space-y-2">
             <p className="text-lg">
-              "This platform completely transformed my career. I went from knowing nothing about coding to landing a job
-              as a frontend developer in just 6 months."
+              "The interactive coding labs made all the difference. Being able to practice and get immediate feedback
+              accelerated my learning tremendously."
             </p>
-            <footer className="text-sm">Alex Johnson</footer>
+            <footer className="text-sm">Sarah Chen</footer>
           </blockquote>
         </div>
       </div>
@@ -82,7 +136,7 @@ export default function SignupPage() {
         >
           <div className="flex flex-col space-y-2 text-center">
             <h1 className="text-2xl font-semibold tracking-tight">Create an account</h1>
-            <p className="text-sm text-muted-foreground">Enter your email below to create your account</p>
+            <p className="text-sm text-muted-foreground">Enter your details to create your account</p>
           </div>
 
           <div className="grid gap-6">
@@ -91,8 +145,15 @@ export default function SignupPage() {
 
               <div className="grid gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input id="name" name="name" placeholder="John Doe" required disabled={isLoading} />
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    type="text"
+                    placeholder="John Doe"
+                    required
+                    disabled={isLoading}
+                  />
                 </div>
 
                 <div className="grid gap-2">
@@ -109,15 +170,25 @@ export default function SignupPage() {
 
                 <div className="grid gap-2">
                   <Label htmlFor="password">Password</Label>
-                  <Input id="password" name="password" type="password" required disabled={isLoading} />
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    disabled={isLoading}
+                  />
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <Checkbox id="terms" name="terms" required />
-                  <label
-                    htmlFor="terms"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
+                  <input
+                    id="terms"
+                    name="terms"
+                    type="checkbox"
+                    required
+                    disabled={isLoading}
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
+                  <Label htmlFor="terms" className="text-sm">
                     I agree to the{" "}
                     <Link href="/terms" className="text-primary hover:underline">
                       Terms of Service
@@ -126,11 +197,11 @@ export default function SignupPage() {
                     <Link href="/privacy" className="text-primary hover:underline">
                       Privacy Policy
                     </Link>
-                  </label>
+                  </Label>
                 </div>
 
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Creating account..." : "Sign up with Email"}
+                  {isLoading ? "Creating account..." : "Create account"}
                 </Button>
               </div>
             </form>
@@ -145,13 +216,39 @@ export default function SignupPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <Button variant="outline" disabled={isLoading}>
+              <Button 
+                variant="outline" 
+                disabled={isGithubLoading}
+                onClick={handleGithubSignIn}
+              >
                 <Github className="mr-2 h-4 w-4" />
-                GitHub
+                {isGithubLoading ? "Signing in..." : "GitHub"}
               </Button>
-              <Button variant="outline" disabled={isLoading}>
-                <Mail className="mr-2 h-4 w-4" />
-                Google
+              <Button 
+                variant="outline" 
+                disabled={isGoogleLoading}
+                onClick={handleGoogleSignIn}
+                className="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
+              >
+                <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                  <path
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    fill="#4285F4"
+                  />
+                  <path
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    fill="#34A853"
+                  />
+                  <path
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                    fill="#FBBC05"
+                  />
+                  <path
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                    fill="#EA4335"
+                  />
+                </svg>
+                {isGoogleLoading ? "Signing in..." : "Google"}
               </Button>
             </div>
           </div>

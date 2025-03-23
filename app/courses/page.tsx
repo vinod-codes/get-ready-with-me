@@ -39,6 +39,12 @@ export default function CoursesPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState("all")
   const [showFilters, setShowFilters] = useState(false)
+  const [filters, setFilters] = useState({
+    level: "",
+    duration: "",
+    rating: "",
+    sortBy: "popular"
+  })
 
   useEffect(() => {
     async function loadUser() {
@@ -69,63 +75,39 @@ export default function CoursesPage() {
 
   const courses = [
     {
+      id: "javascript-essentials",
+      title: "JavaScript Essentials",
+      description: "Learn the fundamentals of programming with JavaScript",
+      category: "JavaScript",
+      level: "Beginner",
+      duration: "8 hours",
+      students: 8700,
+      rating: 4.9,
+      progress: 45,
+      icon: <Code className="h-10 w-10 text-yellow-500" />,
+    },
+    {
       id: "html-fundamentals",
       title: "HTML Fundamentals",
       description: "Learn the building blocks of web pages",
       category: "HTML",
       level: "Beginner",
       duration: "4 hours",
-      students: 12500,
+      students: 5600,
       rating: 4.8,
-      progress: user?.progress.html || 0,
-      icon: <BookOpen className="h-10 w-10 text-orange-500" />,
+      progress: 100,
+      icon: <BookOpen className="h-10 w-10 text-blue-500" />,
     },
     {
       id: "css-styling-layout",
       title: "CSS Styling & Layout",
       description: "Master the art of styling web pages",
       category: "CSS",
-      level: "Beginner",
+      level: "Intermediate",
       duration: "6 hours",
-      students: 10200,
+      students: 4200,
       rating: 4.7,
-      progress: user?.progress.css || 0,
-      icon: <BookOpen className="h-10 w-10 text-blue-500" />,
-    },
-    {
-      id: "javascript-essentials",
-      title: "JavaScript Essentials",
-      description: "Learn the fundamentals of programming with JavaScript",
-      category: "JavaScript",
-      level: "Intermediate",
-      duration: "8 hours",
-      students: 8700,
-      rating: 4.9,
-      progress: user?.progress.javascript || 0,
-      icon: <Code className="h-10 w-10 text-yellow-500" />,
-    },
-    {
-      id: "javascript-dom-manipulation",
-      title: "JavaScript DOM Manipulation",
-      description: "Learn how to interact with the Document Object Model",
-      category: "JavaScript",
-      level: "Intermediate",
-      duration: "5 hours",
-      students: 7200,
-      rating: 4.6,
-      progress: 0,
-      icon: <Code className="h-10 w-10 text-yellow-500" />,
-    },
-    {
-      id: "css-grid-mastery",
-      title: "CSS Grid Mastery",
-      description: "Create complex layouts with CSS Grid",
-      category: "CSS",
-      level: "Intermediate",
-      duration: "4 hours",
-      students: 6500,
-      rating: 4.8,
-      progress: 0,
+      progress: 100,
       icon: <BookOpen className="h-10 w-10 text-blue-500" />,
     },
     {
@@ -133,36 +115,12 @@ export default function CoursesPage() {
       title: "React Basics",
       description: "Build interactive UIs with React",
       category: "React",
-      level: "Intermediate",
+      level: "Beginner",
       duration: "10 hours",
-      students: 9300,
+      students: 12000,
       rating: 4.9,
-      progress: user?.progress.react || 0,
+      progress: 20,
       icon: <Brain className="h-10 w-10 text-cyan-500" />,
-    },
-    {
-      id: "react-hooks-in-depth",
-      title: "React Hooks in Depth",
-      description: "Master the use of React Hooks in functional components",
-      category: "React",
-      level: "Advanced",
-      duration: "6 hours",
-      students: 5200,
-      rating: 4.7,
-      progress: 0,
-      icon: <Brain className="h-10 w-10 text-cyan-500" />,
-    },
-    {
-      id: "responsive-web-design",
-      title: "Responsive Web Design",
-      description: "Create websites that work on any device",
-      category: "CSS",
-      level: "Intermediate",
-      duration: "5 hours",
-      students: 7800,
-      rating: 4.6,
-      progress: 0,
-      icon: <BookOpen className="h-10 w-10 text-blue-500" />,
     },
   ]
 
@@ -181,6 +139,43 @@ export default function CoursesPage() {
     // Filter by category
     if (activeTab !== "all") {
       filtered = filtered.filter((course) => course.category.toLowerCase() === activeTab)
+    }
+
+    // Apply additional filters
+    if (filters.level) {
+      filtered = filtered.filter((course) => course.level.toLowerCase() === filters.level)
+    }
+
+    if (filters.duration) {
+      filtered = filtered.filter((course) => {
+        const hours = parseInt(course.duration)
+        switch (filters.duration) {
+          case "short":
+            return hours < 5
+          case "medium":
+            return hours >= 5 && hours <= 10
+          case "long":
+            return hours > 10
+          default:
+            return true
+        }
+      })
+    }
+
+    if (filters.rating) {
+      filtered = filtered.filter((course) => course.rating >= parseFloat(filters.rating))
+    }
+
+    // Apply sorting
+    switch (filters.sortBy) {
+      case "newest":
+        filtered.sort((a, b) => b.students - a.students) // Using students as a proxy for newness
+        break
+      case "rating":
+        filtered.sort((a, b) => b.rating - a.rating)
+        break
+      default: // popular
+        filtered.sort((a, b) => b.students - a.students)
     }
 
     return filtered
@@ -237,7 +232,11 @@ export default function CoursesPage() {
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Level</label>
-                  <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                  <select 
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    value={filters.level}
+                    onChange={(e) => setFilters({ ...filters, level: e.target.value })}
+                  >
                     <option value="">All Levels</option>
                     <option value="beginner">Beginner</option>
                     <option value="intermediate">Intermediate</option>
@@ -246,7 +245,11 @@ export default function CoursesPage() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Duration</label>
-                  <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                  <select 
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    value={filters.duration}
+                    onChange={(e) => setFilters({ ...filters, duration: e.target.value })}
+                  >
                     <option value="">Any Duration</option>
                     <option value="short">Under 5 hours</option>
                     <option value="medium">5-10 hours</option>
@@ -255,7 +258,11 @@ export default function CoursesPage() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Rating</label>
-                  <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                  <select 
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    value={filters.rating}
+                    onChange={(e) => setFilters({ ...filters, rating: e.target.value })}
+                  >
                     <option value="">Any Rating</option>
                     <option value="4.5">4.5 & Up</option>
                     <option value="4.0">4.0 & Up</option>
@@ -264,7 +271,11 @@ export default function CoursesPage() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Sort By</label>
-                  <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                  <select 
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    value={filters.sortBy}
+                    onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}
+                  >
                     <option value="popular">Most Popular</option>
                     <option value="newest">Newest</option>
                     <option value="rating">Highest Rated</option>
@@ -278,6 +289,12 @@ export default function CoursesPage() {
                   onClick={() => {
                     setSearchQuery("")
                     setActiveTab("all")
+                    setFilters({
+                      level: "",
+                      duration: "",
+                      rating: "",
+                      sortBy: "popular"
+                    })
                   }}
                 >
                   Reset

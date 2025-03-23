@@ -24,11 +24,14 @@ import {
   ArrowLeft,
   Brain,
   MessageSquare,
+  X,
+  Send,
 } from "lucide-react"
 import { getCurrentUser } from "@/app/actions/auth-actions"
 import DashboardHeader from "@/app/dashboard/dashboard-header"
 import { motion } from "framer-motion"
 import { use } from "react"
+import { Textarea } from "@/components/ui/textarea"
 
 type User = {
   id: string
@@ -47,6 +50,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("curriculum")
+  const [showAiMentor, setShowAiMentor] = useState(false)
   
   // Unwrap params using React.use()
   const { courseId } = use(params)
@@ -123,12 +127,6 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
           : courseId === "css-styling-layout"
             ? 100
             : 20,
-    instructor: {
-      name: "Alex Johnson",
-      role: "Senior Frontend Developer",
-      bio: "Alex has over 10 years of experience in frontend development and has worked with companies like Google and Facebook.",
-      image: "/placeholder.svg?height=100&width=100",
-    },
     icon: courseId.includes("javascript") ? (
       <Code className="h-10 w-10 text-yellow-500" />
     ) : courseId.includes("html") || courseId.includes("css") ? (
@@ -271,6 +269,35 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
     },
   ]
 
+  // Add AI mentor dialog component
+  const AiMentorDialog = () => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="w-full max-w-2xl rounded-lg bg-background p-6 shadow-lg">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold">AI Mentor</h2>
+          <Button variant="ghost" size="icon" onClick={() => setShowAiMentor(false)}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="mt-4 space-y-4">
+          <p className="text-muted-foreground">
+            Ask me anything about {course.title}. I'm here to help you learn and understand the concepts better.
+          </p>
+          <div className="space-y-2">
+            <Textarea
+              placeholder="Type your question here..."
+              className="min-h-[100px]"
+            />
+            <Button className="w-full">
+              <Send className="mr-2 h-4 w-4" />
+              Send Question
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
   return (
     <div className="flex min-h-screen flex-col">
       <DashboardHeader user={user} />
@@ -330,41 +357,19 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
               </div>
 
               <div>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Course Instructor</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center space-x-4">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src={course.instructor.image} alt={course.instructor.name} />
-                        <AvatarFallback>
-                          {course.instructor.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{course.instructor.name}</p>
-                        <p className="text-sm text-muted-foreground">{course.instructor.role}</p>
-                      </div>
-                    </div>
-                    <p className="mt-4 text-sm">{course.instructor.bio}</p>
-                  </CardContent>
-                </Card>
-
-                <div className="mt-4">
-                  <Button className="w-full" asChild>
-                    <Link href={`/courses/${courseId}/lessons/lesson-2-3`}>
-                      {course.progress > 0 ? "Continue Learning" : "Start Course"}
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="mt-2 w-full">
-                    <MessageSquare className="mr-2 h-4 w-4" />
-                    Ask AI Mentor
-                  </Button>
-                </div>
+                <Button className="w-full" asChild>
+                  <Link href={`/courses/${courseId}/lessons/lesson-2-3`}>
+                    {course.progress > 0 ? "Continue Learning" : "Start Course"}
+                  </Link>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="mt-2 w-full"
+                  onClick={() => setShowAiMentor(true)}
+                >
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  Ask AI Mentor
+                </Button>
               </div>
             </div>
           </div>
@@ -637,6 +642,8 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
           </Tabs>
         </motion.div>
       </main>
+
+      {showAiMentor && <AiMentorDialog />}
     </div>
   )
 }

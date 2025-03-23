@@ -589,20 +589,36 @@ export default function LessonDetailPage({
 
   // Update lesson data to use currentLesson
   const lesson = {
-    ...currentLesson,
     id: lessonId,
-    resources: currentLesson.resources || [
+    title:
+      lessonId === "lesson-2-1"
+        ? "Variables and Data Types"
+        : lessonId === "lesson-2-2"
+          ? "Functions and Scope"
+          : "Control Flow",
+    type: "video",
+    duration: "15 minutes",
+    description:
+      lessonId === "lesson-2-1"
+        ? "Learn about variables, data types, and how to use them in JavaScript"
+        : lessonId === "lesson-2-2"
+          ? "Understanding functions, scope, and closure in JavaScript"
+          : "Master control flow statements and loops in JavaScript",
+    content: "Lesson content goes here...",
+    videoUrl:
+      lessonId === "lesson-2-1"
+        ? "https://www.youtube.com/embed/9SGDpanrc8U"
+        : lessonId === "lesson-2-2"
+          ? "https://www.youtube.com/embed/9SGDpanrc8U"
+          : "https://www.youtube.com/embed/9SGDpanrc8U",
+    resources: [
       {
         title: "MDN Documentation",
-        url: `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/${
-          lessonId.includes("control") ? "Control_flow" : 
-          lessonId.includes("function") ? "Functions" :
-          lessonId.includes("variable") ? "Grammar_and_types" :
-          "Introduction"
-        }`,
+        description: "Official documentation for JavaScript",
+        url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
         type: "documentation",
-        icon: "BookOpen"
-      }
+      },
+      // ... rest of the resources ...
     ],
     quiz: currentLesson.quiz || [],
     additionalResources: currentLesson.additionalResources || {
