@@ -79,7 +79,7 @@ get-ready-with-me/
    ```
 
 5. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+   Navigate to http://localhost:3000
 
 ## 🎯 Key Features in Detail
 
@@ -121,8 +121,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Links
 
-- [Live Demo](https://getreadywithme.vercel.app)
-- [Documentation](https://docs.getreadywithme.vercel.app)
+- [Live Demo](https://get-ready-with-me.vercel.app)
+- [Documentation](https://docs.get-ready-with-me.com)
 - [Bug Report](https://github.com/vinod-codes/get-ready-with-me/issues)
 
 ## 📞 Contact
