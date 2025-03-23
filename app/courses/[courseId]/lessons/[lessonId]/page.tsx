@@ -752,10 +752,10 @@ export default function LessonDetailPage({
           <motion.div
             key={lessonId}
             className="mx-auto max-w-7xl"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
             <div className="mb-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
@@ -895,7 +895,7 @@ export default function LessonDetailPage({
                                     {resource.type === "notes" && <FileText className="h-4 w-4" />}
                                     {resource.type === "react" && <Code2 className="h-4 w-4" />}
                                     {resource.type === "video" && <Video className="h-4 w-4" />}
-                                    <div>
+          <div>
                                       <div className="font-medium">{resource.title}</div>
                                       <div className="text-sm text-muted-foreground">
                                         {resource.type.charAt(0).toUpperCase() + resource.type.slice(1)}
@@ -1005,8 +1005,8 @@ export default function LessonDetailPage({
               </div>
 
               <div className="h-20" />
-            </div>
-          </motion.div>
+          </div>
+        </motion.div>
         )}
       </main>
     </div>

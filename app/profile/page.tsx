@@ -12,6 +12,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Camera, Edit2, Instagram, Twitter, Youtube } from "lucide-react"
 import { getCurrentUser } from "@/app/actions/auth-actions"
 import DashboardHeader from "@/app/dashboard/dashboard-header"
+import { Switch } from "@/components/ui/switch"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 type User = {
   id: string
@@ -267,32 +269,24 @@ export default function ProfilePage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="language">Language</Label>
-                    <select
-                      id="language"
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <option value="en">English</option>
-                      <option value="es">Spanish</option>
-                      <option value="fr">French</option>
-                      <option value="de">German</option>
-                    </select>
+                    <Select defaultValue="en">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a language" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="es">Spanish</SelectItem>
+                        <SelectItem value="fr">French</SelectItem>
+                        <SelectItem value="de">German</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="flex items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
                       <h3 className="font-medium">Email Notifications</h3>
                       <p className="text-sm text-muted-foreground">Receive emails about your account activity</p>
                     </div>
-                    <div className="ml-auto flex items-center space-x-2">
-                      <Label htmlFor="notifications" className="sr-only">
-                        Toggle email notifications
-                      </Label>
-                      <input
-                        type="checkbox"
-                        id="notifications"
-                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                        defaultChecked
-                      />
-                    </div>
+                    <Switch id="notifications" defaultChecked />
                   </div>
                   <Button className="w-full">Save Settings</Button>
                 </CardContent>

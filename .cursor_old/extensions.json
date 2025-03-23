@@ -1,0 +1,14 @@
+{
+    "recommendations": [
+        "PKief.material-icon-theme",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "formulahendry.auto-rename-tag",
+        "christian-kohler.path-intellisense",
+        "streetsidesoftware.code-spell-checker",
+        "naumovs.color-highlight",
+        "ms-vscode.vscode-typescript-next",
+        "bradlc.vscode-tailwindcss",
+        "eamodio.gitlens"
+    ]
+} 
