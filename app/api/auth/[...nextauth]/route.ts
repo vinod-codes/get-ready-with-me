@@ -23,7 +23,10 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         try {
+          console.log("Starting credentials authorization:", { email: credentials?.email })
+          
           if (!credentials?.email || !credentials?.password) {
+            console.error("Missing credentials")
             throw new Error('Missing credentials')
           }
 
@@ -35,12 +38,15 @@ const handler = NextAuth({
 
           if (error) {
             console.error('Supabase auth error:', error)
-            return null
+            throw new Error(error.message)
           }
 
           if (!user) {
+            console.error('No user returned from Supabase')
             return null
           }
+
+          console.log("Supabase auth successful:", { userId: user.id, email: user.email })
 
           // Get user data from users table
           const { data: userData, error: userError } = await supabase
@@ -51,9 +57,35 @@ const handler = NextAuth({
 
           if (userError) {
             console.error('Error fetching user data:', userError)
-            return null
+            // Create user if not exists
+            const { data: newUser, error: createError } = await supabase
+              .from('users')
+              .insert({
+                id: user.id,
+                email: user.email,
+                name: user.user_metadata?.name || '',
+                image: user.user_metadata?.avatar_url || '',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              })
+              .select()
+              .single()
+
+            if (createError) {
+              console.error('Error creating user:', createError)
+              return null
+            }
+
+            console.log("Created new user:", newUser)
+            return {
+              id: user.id,
+              email: user.email,
+              name: user.user_metadata?.name || '',
+              image: user.user_metadata?.avatar_url || '',
+            }
           }
 
+          console.log("Retrieved user data:", userData)
           return {
             id: user.id,
             email: user.email,
@@ -62,7 +94,7 @@ const handler = NextAuth({
           }
         } catch (error) {
           console.error('Error in authorize:', error)
-          return null
+          throw error
         }
       }
     }),
@@ -130,6 +162,7 @@ const handler = NextAuth({
         }
 
         if (!existingUser) {
+          console.log("Creating new user in Supabase")
           // Create new user in Supabase
           const { error: insertError } = await supabase
             .from('users')
@@ -146,6 +179,7 @@ const handler = NextAuth({
             console.error('Error creating user:', insertError)
             return false
           }
+          console.log("Successfully created new user")
         }
       } catch (error) {
         console.error('Error in signIn callback:', error)

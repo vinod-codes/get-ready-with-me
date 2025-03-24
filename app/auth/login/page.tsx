@@ -25,21 +25,32 @@ export default function LoginPage() {
     setError("")
 
     const formData = new FormData(e.currentTarget)
+    const email = formData.get("email") as string
+    const password = formData.get("password") as string
 
     try {
+      console.log("Attempting login with email:", email)
       const result = await signIn("credentials", {
-        email: formData.get("email"),
-        password: formData.get("password"),
+        email,
+        password,
         redirect: false,
       })
 
+      console.log("Sign in result:", result)
+
       if (result?.error) {
+        console.error("Login error:", result.error)
         setError(result.error)
       } else if (result?.ok) {
+        console.log("Login successful, redirecting to dashboard")
         router.push("/dashboard")
         router.refresh()
+      } else {
+        console.error("Unexpected result:", result)
+        setError("An unexpected error occurred. Please try again.")
       }
     } catch (err) {
+      console.error("Login error:", err)
       setError("An unexpected error occurred. Please try again.")
     } finally {
       setIsLoading(false)
