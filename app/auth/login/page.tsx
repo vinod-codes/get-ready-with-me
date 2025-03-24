@@ -130,12 +130,10 @@ export default function LoginPage() {
           CodeReady
         </div>
         <div className="relative z-20 mt-auto">
-          <blockquote className="space-y-2">
-            <p className="text-lg">
-              "CodeReady has transformed how I prepare for coding interviews. The AI mentor is incredibly helpful!"
-            </p>
-            <footer className="text-sm">Sofia Davis</footer>
-          </blockquote>
+          <h2 className="text-2xl font-bold mb-4">Welcome to CodeReady</h2>
+          <p className="text-lg text-gray-300">
+            Your journey to becoming a better developer starts here.
+          </p>
         </div>
       </div>
       <div className="p-4 lg:p-8 h-full flex items-center">
