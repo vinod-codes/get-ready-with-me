@@ -1,6 +1,7 @@
 import NextAuth, { User, Account, Profile } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import GithubProvider from "next-auth/providers/github"
+import CredentialsProvider from "next-auth/providers/credentials"
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -14,6 +15,57 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 const handler = NextAuth({
   providers: [
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            throw new Error('Missing credentials')
+          }
+
+          // Sign in with Supabase
+          const { data: { user }, error } = await supabase.auth.signInWithPassword({
+            email: credentials.email,
+            password: credentials.password,
+          })
+
+          if (error) {
+            console.error('Supabase auth error:', error)
+            return null
+          }
+
+          if (!user) {
+            return null
+          }
+
+          // Get user data from users table
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', user.id)
+            .single()
+
+          if (userError) {
+            console.error('Error fetching user data:', userError)
+            return null
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: userData?.name || '',
+            image: userData?.image || '',
+          }
+        } catch (error) {
+          console.error('Error in authorize:', error)
+          return null
+        }
+      }
+    }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
@@ -28,7 +80,6 @@ const handler = NextAuth({
         timeout: 10000,
       },
       profile(profile) {
-        console.log("Google profile:", profile)
         return {
           id: profile.sub,
           name: profile.name,

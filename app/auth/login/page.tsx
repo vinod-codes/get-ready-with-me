@@ -35,7 +35,7 @@ export default function LoginPage() {
 
       if (result?.error) {
         setError(result.error)
-      } else {
+      } else if (result?.ok) {
         router.push("/dashboard")
         router.refresh()
       }
@@ -50,14 +50,10 @@ export default function LoginPage() {
     setIsGoogleLoading(true)
     setError("")
     try {
-      const result = await signIn("google", {
+      await signIn("google", {
         callbackUrl: "/dashboard",
         redirect: true,
       })
-      
-      if (result?.error) {
-        setError(`Failed to sign in with Google: ${result.error}`)
-      }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.")
     } finally {
@@ -69,14 +65,10 @@ export default function LoginPage() {
     setIsGithubLoading(true)
     setError("")
     try {
-      const result = await signIn("github", {
+      await signIn("github", {
         callbackUrl: "/dashboard",
         redirect: true,
       })
-      
-      if (result?.error) {
-        setError(`Failed to sign in with GitHub: ${result.error}`)
-      }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.")
     } finally {
