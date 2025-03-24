@@ -1,4 +1,4 @@
--- Create users table
+        -- Create users table
 CREATE TABLE IF NOT EXISTS public.users (
     id TEXT PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
