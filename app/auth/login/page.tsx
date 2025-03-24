@@ -15,9 +15,9 @@ import MetaBalls from "@/components/MetaBalls"
 export default function LoginPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [isGithubLoading, setIsGithubLoading] = useState(false)
-  const [error, setError] = useState("")
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -25,23 +25,22 @@ export default function LoginPage() {
     setError("")
 
     const formData = new FormData(e.currentTarget)
-    const email = formData.get("email") as string
-    const password = formData.get("password") as string
 
     try {
       const result = await signIn("credentials", {
-        email,
-        password,
+        email: formData.get("email"),
+        password: formData.get("password"),
         redirect: false,
       })
 
       if (result?.error) {
-        setError("Invalid email or password")
+        setError(result.error)
       } else {
         router.push("/dashboard")
+        router.refresh()
       }
     } catch (err) {
-      setError("An unexpected error occurred")
+      setError("An unexpected error occurred. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -51,20 +50,15 @@ export default function LoginPage() {
     setIsGoogleLoading(true)
     setError("")
     try {
-      console.log("Starting Google sign-in process...")
       const result = await signIn("google", {
         callbackUrl: "/dashboard",
-        redirect: true
+        redirect: true,
       })
       
-      console.log("Google sign-in result:", result)
-      
       if (result?.error) {
-        console.error("Google sign-in error:", result.error)
         setError(`Failed to sign in with Google: ${result.error}`)
       }
     } catch (err) {
-      console.error("Unexpected error during Google sign-in:", err)
       setError("An unexpected error occurred. Please try again.")
     } finally {
       setIsGoogleLoading(false)
@@ -75,22 +69,15 @@ export default function LoginPage() {
     setIsGithubLoading(true)
     setError("")
     try {
-      console.log("Starting GitHub sign-in process...")
       const result = await signIn("github", {
         callbackUrl: "/dashboard",
-        redirect: false
+        redirect: true,
       })
       
-      console.log("GitHub sign-in result:", result)
-      
       if (result?.error) {
-        console.error("GitHub sign-in error:", result.error)
         setError(`Failed to sign in with GitHub: ${result.error}`)
-      } else if (result?.url) {
-        router.push(result.url)
       }
     } catch (err) {
-      console.error("Unexpected error during GitHub sign-in:", err)
       setError("An unexpected error occurred. Please try again.")
     } finally {
       setIsGithubLoading(false)
