@@ -54,7 +54,7 @@ export default function LoginPage() {
       console.log("Starting Google sign-in process...")
       const result = await signIn("google", {
         callbackUrl: "/dashboard",
-        redirect: false
+        redirect: true
       })
       
       console.log("Google sign-in result:", result)
@@ -62,8 +62,6 @@ export default function LoginPage() {
       if (result?.error) {
         console.error("Google sign-in error:", result.error)
         setError(`Failed to sign in with Google: ${result.error}`)
-      } else if (result?.url) {
-        router.push(result.url)
       }
     } catch (err) {
       console.error("Unexpected error during Google sign-in:", err)
