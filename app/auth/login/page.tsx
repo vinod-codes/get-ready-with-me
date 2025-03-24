@@ -54,14 +54,16 @@ export default function LoginPage() {
       console.log("Starting Google sign-in process...")
       const result = await signIn("google", {
         callbackUrl: "/dashboard",
-        redirect: true,
-        state: "login"
+        redirect: false
       })
+      
       console.log("Google sign-in result:", result)
       
       if (result?.error) {
         console.error("Google sign-in error:", result.error)
         setError(`Failed to sign in with Google: ${result.error}`)
+      } else if (result?.url) {
+        router.push(result.url)
       }
     } catch (err) {
       console.error("Unexpected error during Google sign-in:", err)
@@ -78,14 +80,16 @@ export default function LoginPage() {
       console.log("Starting GitHub sign-in process...")
       const result = await signIn("github", {
         callbackUrl: "/dashboard",
-        redirect: true,
-        state: "login"
+        redirect: false
       })
+      
       console.log("GitHub sign-in result:", result)
       
       if (result?.error) {
         console.error("GitHub sign-in error:", result.error)
         setError(`Failed to sign in with GitHub: ${result.error}`)
+      } else if (result?.url) {
+        router.push(result.url)
       }
     } catch (err) {
       console.error("Unexpected error during GitHub sign-in:", err)

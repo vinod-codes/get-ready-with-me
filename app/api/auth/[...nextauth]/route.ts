@@ -1,13 +1,18 @@
-import NextAuth from "next-auth"
+import NextAuth, { User, Account, Profile } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import GithubProvider from "next-auth/providers/github"
-import { supabase } from "@/lib/supabase/client"
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 const handler = NextAuth({
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_ID || "",
-      clientSecret: process.env.GOOGLE_SECRET || "",
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
       authorization: {
         params: {
           prompt: "consent",
@@ -19,6 +24,7 @@ const handler = NextAuth({
         timeout: 10000,
       },
       profile(profile) {
+        console.log("Google profile:", profile)
         return {
           id: profile.sub,
           name: profile.name,
@@ -44,12 +50,18 @@ const handler = NextAuth({
     signIn: "/auth/login",
     signOut: "/auth/login",
     error: "/auth/login",
+    newUser: "/dashboard",
   },
   callbacks: {
     async signIn({ user, account, profile }) {
       try {
         console.log("SignIn callback:", { user, account, profile })
         
+        if (!user.id || !user.email) {
+          console.error("Missing user data:", user)
+          return false
+        }
+
         // Check if user exists in Supabase
         const { data: existingUser, error: fetchError } = await supabase
           .from('users')
@@ -69,8 +81,8 @@ const handler = NextAuth({
             .insert({
               id: user.id,
               email: user.email,
-              name: user.name,
-              image: user.image,
+              name: user.name || '',
+              image: user.image || '',
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             })
@@ -118,18 +130,41 @@ const handler = NextAuth({
     },
     async redirect({ url, baseUrl }) {
       console.log("Redirect callback:", { url, baseUrl })
-      // Allow relative URLs
-      if (url.startsWith("/")) return `${baseUrl}${url}`
-      // Allow URLs from the same origin
-      else if (new URL(url).origin === baseUrl) return url
-      // Default to base URL
-      return baseUrl
+      
+      // If the url is relative, prefix it with the base URL
+      if (url.startsWith("/")) {
+        return `${baseUrl}${url}`
+      }
+      
+      // If the url is from the same origin, allow it
+      try {
+        const urlObj = new URL(url)
+        if (urlObj.origin === baseUrl) {
+          return url
+        }
+      } catch (error) {
+        console.error('Error parsing URL:', error)
+      }
+      
+      // Default to dashboard
+      return `${baseUrl}/dashboard`
     },
   },
   debug: true,
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
+  },
+  events: {
+    async signIn(message: { user: User; account: Account | null; profile?: Profile; isNewUser?: boolean }) {
+      console.log("SignIn event:", message)
+    },
+    async signOut(message: { session: any; token: any }) {
+      console.log("SignOut event:", message)
+    },
+    async session(message: { session: any; token: any }) {
+      console.log("Session event:", message)
+    },
   },
 })
 
