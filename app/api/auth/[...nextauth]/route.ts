@@ -5,14 +5,19 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
-if (!supabaseUrl || !supabaseAnonKey) {
+if (!supabaseUrl || !supabaseServiceKey) {
   throw new Error('Missing Supabase environment variables')
 }
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+})
 
 const handler = NextAuth({
   providers: [
@@ -58,32 +63,37 @@ const handler = NextAuth({
 
           if (userError) {
             console.error('Error fetching user data:', userError)
-            // Create user if not exists
-            const { data: newUser, error: createError } = await supabase
-              .from('users')
-              .insert({
+            
+            // If user doesn't exist, create them
+            if (userError.code === 'PGRST116') {
+              console.log("User not found in users table, creating new user...")
+              const { data: newUser, error: createError } = await supabase
+                .from('users')
+                .insert({
+                  id: user.id,
+                  email: user.email,
+                  name: user.user_metadata?.name || '',
+                  image: user.user_metadata?.avatar_url || '',
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                })
+                .select()
+                .single()
+
+              if (createError) {
+                console.error('Error creating user:', createError)
+                throw new Error('Failed to create user profile')
+              }
+
+              console.log("Created new user:", newUser)
+              return {
                 id: user.id,
                 email: user.email,
                 name: user.user_metadata?.name || '',
                 image: user.user_metadata?.avatar_url || '',
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-              })
-              .select()
-              .single()
-
-            if (createError) {
-              console.error('Error creating user:', createError)
-              return null
+              }
             }
-
-            console.log("Created new user:", newUser)
-            return {
-              id: user.id,
-              email: user.email,
-              name: user.user_metadata?.name || '',
-              image: user.user_metadata?.avatar_url || '',
-            }
+            throw new Error('Failed to access user data')
           }
 
           console.log("Retrieved user data:", userData)

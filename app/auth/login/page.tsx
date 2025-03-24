@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Icons } from "@/components/icons"
 import MetaBalls from "@/components/MetaBalls"
+import { loginUser } from "@/app/actions/auth-actions"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -29,24 +30,22 @@ export default function LoginPage() {
     const password = formData.get("password") as string
 
     try {
-      console.log("Attempting login with email:", email)
-      const result = await signIn("credentials", {
+      console.log("Attempting login with NextAuth...")
+      const signInResult = await signIn("credentials", {
         email,
         password,
         redirect: false,
       })
 
-      console.log("Sign in result:", result)
-
-      if (result?.error) {
-        console.error("Login error:", result.error)
-        setError(result.error)
-      } else if (result?.ok) {
-        console.log("Login successful, redirecting to dashboard")
+      if (signInResult?.error) {
+        console.error("NextAuth sign in error:", signInResult.error)
+        setError(signInResult.error)
+      } else if (signInResult?.ok) {
+        console.log("NextAuth sign in successful, redirecting to dashboard")
         router.push("/dashboard")
         router.refresh()
       } else {
-        console.error("Unexpected result:", result)
+        console.error("Unexpected NextAuth result:", signInResult)
         setError("An unexpected error occurred. Please try again.")
       }
     } catch (err) {
