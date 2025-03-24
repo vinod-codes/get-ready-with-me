@@ -153,5 +153,13 @@ return (
                   <option value="intermediate">Intermediate</option>
                   <option value="advanced">Advanced</option>
                 </select>
-\
+              </div>
+            </div>
+          </div>
+        )}
+      </motion.div>
+    </main>
+  </div>
+)
+}
 

@@ -59,10 +59,6 @@ export default function PostDetailPage({ params }: { params: { postId: string } 
   useEffect(() => {
     async function loadUser() {
       try {
-        const userData = await getCurrentUser()\
-          => {
-    async function loadUser() {
-      try {
         const userData = await getCurrentUser()
         if (!userData) {
           router.push("/auth/login")
